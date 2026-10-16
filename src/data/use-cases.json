@@ -1,0 +1,980 @@
+[
+  {
+    "id": "present",
+    "category": "Presents",
+    "title": "Present",
+    "description": "A ready-to-use prompt that turns a resume and rough notes into an organized Present, plus internal info. Copy it as is.",
+    "fields": [],
+    "template": [
+      "Parse the attached resume and pasted collection of notes below (may be disorganized, include misspellings, abbreviations, etc.) and turn it into an organized \"Present\" that follows this format:",
+      "",
+      "**FIRSTNAME - Discipline**",
+      "",
+      "* Education: [HIGHEST DEGREE ACHIEVED - IF MULTIPLE MASTERS LEVEL DEGREES, INCLUDE ALL. IF UNSURE, INCLUDE ALL]",
+      "* [number] years [or months, if less than one year experience] of [discipline abbreviation, e.g. \"SLP\" or OT\"] experience working with [AGES / POPULATION SERVED - DEFAULT TO",
+      "* Experience with [specific experience with devices, procedures, or specific disabilities, etc.]",
+      "* Interview availability [IF UNSPECIFIED, DEFAULT TO: Flexible interview availability with notice]",
+      "* Available to start ASAP",
+      "",
+      "**[EXAMPLE:]**",
+      "",
+      "**Jane - Occupational Therapist**",
+      "",
+      "* Education: M.S. Occupational Therapy, Example University",
+      "* Licensed CA OT, Active NBCOT Certification, NBCOT Autism Certification",
+      "* 7 years of clinical OT experience working with pediatric and school-based clients ages 0-18",
+      "* Experience with ASD, IEP systems, AHA BLS Certification",
+      "* Flexible interview availability with notice",
+      "* Available to start ASAP",
+      "",
+      "**Internal Info: (COPY FORMAT, REPLACE WITH SPECIFICS FROM NOTES/RESUME)**",
+      "",
+      "* **Compensation: looking for $60**",
+      "* Licensed in CA",
+      "* Open to working with any pop.",
+      "* ZIP: 92646 open to commute up to 45 minutes",
+      "",
+      "Rules for Internal Info:",
+      "- Keep it to 4 or 5 bullets at most. Prioritize compensation, licensure, population preferences, and location.",
+      "- If the resume and notes include no ZIP code, look up the ZIP codes for the candidate's city and state and use the one with the median numerical value when more than one is found. If you cannot verify ZIP codes, write [ZIP] rather than guessing."
+    ],
+    "note": "(works best in Claude)"
+  },
+  {
+    "id": "toro-nearby-candidates",
+    "category": "Bullhorn + Toro",
+    "title": "Find candidates for nearby hot jobs",
+    "description": "Build a Bullhorn/Toro search for qualified candidates near open school roles.",
+    "fields": [
+      {
+        "id": "target",
+        "label": "Target",
+        "type": "select",
+        "defaultValue": "Recent SPIN + Hot Nearby Jobs",
+        "options": [
+          "Recent SPIN + Hot Nearby Jobs",
+          "Hot Nearby Jobs",
+          "Recently Engaged + Hot Jobs"
+        ]
+      },
+      {
+        "id": "role",
+        "label": "Therapy role",
+        "type": "select",
+        "options": [
+          "Occupational Therapist (OT)",
+          "Certified Occupational Therapist Assistant (COTA)",
+          "Speech-Language Pathologist (SLP)",
+          "Physical Therapist (PT)",
+          "Physical Therapist Assistant (PTA)",
+          "Speech-Language Pathology Assistant (SLPA)"
+        ]
+      },
+      {
+        "id": "spinDays",
+        "label": "Max. days since last SPIN",
+        "type": "select",
+        "options": [
+          "30",
+          "60",
+          "90",
+          "120"
+        ],
+        "hiddenWhen": {
+          "fieldId": "target",
+          "equals": "Hot Nearby Jobs"
+        },
+        "labelWhen": {
+          "fieldId": "target",
+          "equals": "Recently Engaged + Hot Jobs",
+          "label": "Max. days since last Recruiting - Connect"
+        }
+      },
+      {
+        "id": "skills",
+        "label": "Skills to match",
+        "type": "textarea",
+        "placeholder": "Choose a role to prefill",
+        "hint": "Prefilled from the role. Edit to match the skill names in Bullhorn, separated by commas.",
+        "defaultValue": "{{#if role=Occupational Therapist (OT)|Physical Therapist (PT)}}{{role.abbr}} - Schools, {{role.abbr}} - Home Health, {{role.abbr}} - Healthcare, {{role.abbr}} - Teletherapy{{/if}}{{#if role=Speech-Language Pathologist (SLP)}}SLP - General, SLP - School, SLP, SLP - Adult, SLP - CCC, SLP - CFY, SLP - Geriatric, SLP - Home Health, SLP - Inpatient, SLP - Outpatient, SLP - Pediatrics, SLP - Teletherapy, SLP - Skilled Nursing{{/if}}{{#if role=Speech-Language Pathology Assistant (SLPA)|Certified Occupational Therapist Assistant (COTA)|Physical Therapist Assistant (PTA)}}{{role.abbr}} - Schools, {{role.abbr}} - Healthcare{{/if}}"
+      },
+      {
+        "id": "radius",
+        "label": "Job radius (miles)",
+        "type": "select",
+        "options": [
+          "15",
+          "30",
+          "50",
+          "75"
+        ]
+      },
+      {
+        "id": "jobDays",
+        "label": "Job added or updated within (days)",
+        "type": "select",
+        "options": [
+          "14",
+          "30",
+          "60"
+        ]
+      },
+      {
+        "id": "profileDays",
+        "label": "No Profile Complete or Linked action within (days)",
+        "type": "select",
+        "options": [
+          "3",
+          "7",
+          "14"
+        ]
+      },
+      {
+        "id": "spinHours",
+        "label": "No Spin action within (hours)",
+        "type": "select",
+        "options": [
+          "12",
+          "24",
+          "48"
+        ]
+      }
+    ],
+    "template": [
+      "In Bullhorn/Toro, find {{role}} candidates who meet all of these criteria:",
+      "",
+      "{{#if target=Recent SPIN + Hot Nearby Jobs}}",
+      "1. At least one Spin action was logged within the past {{spinDays.count:day}}.",
+      "{{/if}}",
+      "{{#if target=Recently Engaged + Hot Jobs}}",
+      "1. At least one \"Recruiting - Connect\" action was logged within the past {{spinDays.count:day}}.",
+      "{{/if}}",
+      "2. Candidate skills include at least one of: {{skills.list:or}}.",
+      "3. At least one job within {{radius.count:mile}} of the candidate's permanent address has Status = Accepting Candidates, Open/Closed = Open, and a Date Added or Last Updated date within the past {{jobDays.count:day}}.",
+      "4. No Profile Complete or Linked action was logged within the past {{profileDays.count:day}}.",
+      "5. No Spin action was logged within the past {{spinHours.count:hour}}.",
+      "",
+      "Return the matching {{role.abbr}} candidates, name the qualifying nearby job or jobs for each, and show which criteria each result satisfies."
+    ],
+    "afterPrompt": {
+      "heading": "Send this after Toro pulls the first list. Repeat until Toro stops returning results.",
+      "text": "Continue your search, looking for any candidates you missed on the first search. Export to a .csv file if it enables you to return more candidates."
+    }
+  },
+  {
+    "id": "school-job-posting",
+    "category": "Job postings",
+    "title": "Write a school-based job posting",
+    "description": "Create a polished, search-friendly posting tailored to a role and location.",
+    "fields": [
+      {
+        "id": "role",
+        "label": "Role or title",
+        "type": "select",
+        "options": [
+          "Speech-Language Pathologist (SLP)",
+          "Speech-Language Pathology Assistant (SLPA)",
+          "Occupational Therapist (OT)",
+          "Certified Occupational Therapist Assistant (COTA)",
+          "Physical Therapist (PT)",
+          "Physical Therapist Assistant (PTA)",
+          "Audiologist",
+          "Paraprofessional"
+        ]
+      },
+      {
+        "id": "remote",
+        "label": "Fully remote",
+        "type": "checkbox"
+      },
+      {
+        "id": "city",
+        "label": "City",
+        "type": "text",
+        "placeholder": "e.g., Seneca",
+        "hiddenWhen": {
+          "fieldId": "remote",
+          "equals": "Yes"
+        },
+        "format": "city"
+      },
+      {
+        "id": "state",
+        "label": "State",
+        "type": "text",
+        "placeholder": "e.g., Missouri",
+        "hint": "For remote roles, enter the state where the students are.",
+        "format": "state"
+      },
+      {
+        "id": "schedule",
+        "label": "Schedule",
+        "type": "select",
+        "optional": true,
+        "options": [
+          "Full-time",
+          "Part-time"
+        ]
+      },
+      {
+        "id": "schoolYear",
+        "label": "School year or term",
+        "type": "text",
+        "placeholder": "e.g., 2026-2027 or ESY",
+        "defaultValue": "{{@schoolYear}}",
+        "hint": "Prefilled with the current school year."
+      },
+      {
+        "id": "pay",
+        "label": "Pay range",
+        "type": "text",
+        "optional": true,
+        "placeholder": "e.g., $45-$60 per hour",
+        "hint": "Filled from the state, role, and whether it's remote, when a range is on file. Type over it to use a custom range.",
+        "hiddenWhen": {
+          "fieldId": "noPay",
+          "equals": "Yes"
+        },
+        "lookup": {
+          "state": "state",
+          "key": "{{role.abbr}}{{#if remote}} Virtual{{/if}}",
+          "table": {
+            "SLP": {
+              "California": "$60-$75 per hour",
+              "Washington": "$55-$68 per hour",
+              "Wyoming": "$55-$68 per hour",
+              "*": "$50-$60 per hour"
+            },
+            "SLP Virtual": {
+              "California": "$55-$65 per hour",
+              "*": "$45-$55 per hour"
+            },
+            "OT": {
+              "California": "$50-$65 per hour",
+              "*": "$45-$55 per hour"
+            },
+            "OT Virtual": {
+              "California": "$45-$60 per hour",
+              "*": "$40-$50 per hour"
+            },
+            "PT": {
+              "California": "$65-$75 per hour",
+              "*": "$50-$60 per hour"
+            },
+            "PT Virtual": {
+              "California": "$55-$65 per hour",
+              "*": "$40-$50 per hour"
+            },
+            "SLPA": {
+              "California": "$40-$50 per hour",
+              "*": "$30-$40 per hour"
+            },
+            "COTA": {
+              "California": "$45+ per hour",
+              "*": "$30-$45 per hour"
+            },
+            "PTA": {
+              "California": "$45+ per hour",
+              "*": "$35-$45 per hour"
+            },
+            "Audiologist": {
+              "California": "$75+ per hour",
+              "*": "$50-$65 per hour"
+            }
+          }
+        }
+      },
+      {
+        "id": "noPay",
+        "label": "Do not disclose pay range",
+        "type": "checkbox"
+      },
+      {
+        "id": "travel",
+        "label": "Travel assignment",
+        "type": "checkbox",
+        "hiddenWhen": {
+          "fieldId": "remote",
+          "equals": "Yes"
+        }
+      }
+    ],
+    "template": [
+      "Write a standardized, search-friendly job posting for {{role.a}} position in a school setting.",
+      "",
+      "Position details:",
+      "- Role: {{role}}",
+      "{{#if remote}}",
+      "- Location: Fully remote (school-based teletherapy) serving students in {{state}}",
+      "{{else}}",
+      "- Location: {{city}}, {{state}}",
+      "{{/if}}",
+      "{{#if schedule}}",
+      "- Schedule: {{schedule}}",
+      "{{/if}}",
+      "- School year or term: {{schoolYear.upcoming}}",
+      "{{#if noPay}}",
+      "- Pay: not to be disclosed. Do not mention pay anywhere in the posting.",
+      "{{/if}}",
+      "{{#if !noPay && pay}}",
+      "- Pay range: {{pay}}",
+      "{{/if}}",
+      "{{#if !noPay && !pay}}",
+      "- Pay: not provided. Do not mention pay anywhere in the posting.",
+      "{{/if}}",
+      "{{#if travel}}",
+      "- Assignment type: Travel assignment",
+      "{{/if}}",
+      "",
+      "Use the current date to choose an accurate start date{{#if schoolYear~esy}} that fits an extended school year (summer) schedule{{/if}}.",
+      "",
+      "{{#if role=Paraprofessional}}",
+      "Qualifications: Paraprofessional requirements are set by the state and district, so do not require a clinical license. Include only the education and credential requirements you can verify for {{state}} and say what to confirm with the district.",
+      "{{/if}}",
+      "{{#if role=Speech-Language Pathology Assistant (SLPA)|Certified Occupational Therapist Assistant (COTA)|Physical Therapist Assistant (PTA)}}",
+      "Qualifications: Assistants work under the supervision of a licensed therapist. Reflect {{state}}'s licensure, registration, or certification requirements for {{role.name.a}} and its supervision expectations, along with the typical education and experience, without inventing requirements.",
+      "{{/if}}",
+      "{{#if role=Speech-Language Pathologist (SLP)|Occupational Therapist (OT)|Physical Therapist (PT)|Audiologist}}",
+      "Qualifications: Tailor the licensing, certification, education, and experience requirements to {{role.a}} working in {{state}}. Do not invent requirements.",
+      "{{/if}}",
+      "",
+      "{{#if remote}}",
+      "Describe the role as fully remote, school-based teletherapy. Include any {{state}} licensure and telepractice requirements that apply when serving students there. Do not mention a commute, a city, or relocation, and do not include a list of ZIP codes.",
+      "{{else}}",
+      "Finish with nearby ZIP codes for {{city}}, {{state}}. If you cannot verify them, say so rather than guessing.",
+      "{{/if}}",
+      "{{#if travel}}",
+      "Because this is a travel assignment, mention travel stipends or relocation support only where appropriate, and qualify them as subject to eligibility.",
+      "{{else}}",
+      "This is not a travel assignment, so do not mention travel stipends, relocation, or housing.",
+      "{{/if}}",
+      "",
+      "Use a professional recruiter tone. Include a title (with the role{{#if schedule}}, schedule,{{/if}} and location), highlights, an introduction, verified benefits, responsibilities, qualifications, job details, and a concise call to action. Use [Company Name] as the company placeholder and do not invent benefits."
+    ],
+    "checks": [
+      {
+        "when": "pay && !pay~$",
+        "message": "The pay range has no dollar amount. Add figures like \"$45-$60 per hour\", or clear it to leave pay out."
+      },
+      {
+        "when": "remote && role=Paraprofessional",
+        "message": "Paraprofessional roles are usually in person. Confirm this one is fully remote."
+      }
+    ]
+  },
+  {
+    "id": "cold-email-builder",
+    "category": "Outreach",
+    "title": "Cold email builder",
+    "description": "Generate a short, personable cold email for an open school role, in a consistent recruiter format.",
+    "fields": [
+      {
+        "id": "role",
+        "label": "Role",
+        "type": "select",
+        "options": [
+          "Occupational Therapist (OT)",
+          "Certified Occupational Therapist Assistant (COTA)",
+          "Speech-Language Pathologist (SLP)",
+          "Physical Therapist (PT)",
+          "Physical Therapist Assistant (PTA)",
+          "Speech-Language Pathology Assistant (SLPA)",
+          "Audiologist",
+          "Paraprofessional"
+        ]
+      },
+      {
+        "id": "remote",
+        "label": "Fully remote",
+        "type": "checkbox"
+      },
+      {
+        "id": "city",
+        "label": "City",
+        "type": "text",
+        "placeholder": "e.g., Hacienda Heights",
+        "hiddenWhen": {
+          "fieldId": "remote",
+          "equals": "Yes"
+        },
+        "format": "city"
+      },
+      {
+        "id": "state",
+        "label": "State",
+        "type": "text",
+        "placeholder": "e.g., CA",
+        "hint": "For remote roles, enter the state where the students are.",
+        "format": "state"
+      },
+      {
+        "id": "schoolYear",
+        "label": "School year or term",
+        "type": "text",
+        "placeholder": "e.g., 2026-2027 school year, or ESY"
+      },
+      {
+        "id": "status",
+        "label": "Hiring status",
+        "type": "select",
+        "defaultValue": "Now interviewing",
+        "options": [
+          "Now interviewing",
+          "Actively hiring",
+          "Starting soon"
+        ],
+        "phrases": {
+          "Now interviewing": "is now interviewing for",
+          "Actively hiring": "is actively hiring",
+          "Starting soon": "has an opening starting soon for"
+        }
+      },
+      {
+        "id": "schedule",
+        "label": "Schedule",
+        "type": "select",
+        "optional": true,
+        "options": [
+          "Full-time",
+          "Part-time"
+        ]
+      },
+      {
+        "id": "openTo",
+        "label": "Open to",
+        "type": "select",
+        "optional": true,
+        "defaultValue": "Local and travel candidates",
+        "options": [
+          "Local and travel candidates",
+          "Local candidates only",
+          "Travel candidates only"
+        ],
+        "hiddenWhen": {
+          "fieldId": "remote",
+          "equals": "Yes"
+        }
+      },
+      {
+        "id": "stipend",
+        "label": "Mention travel stipends",
+        "type": "checkbox",
+        "hiddenWhen": [
+          {
+            "fieldId": "remote",
+            "equals": "Yes"
+          },
+          {
+            "fieldId": "openTo",
+            "equals": "Local candidates only"
+          }
+        ]
+      },
+      {
+        "id": "cta",
+        "label": "How they should reach you",
+        "type": "select",
+        "defaultValue": "Call or text, plus scheduling link",
+        "options": [
+          "Call or text, plus scheduling link",
+          "Scheduling link only",
+          "Reply to the email"
+        ]
+      },
+      {
+        "id": "extra",
+        "label": "Extra detail to include",
+        "type": "text",
+        "optional": true,
+        "placeholder": "e.g., a bilingual caseload, or a start date"
+      }
+    ],
+    "template": [
+      "Write a short cold outreach email from a recruiter to {{role.name.a}} who has not spoken with me before. I will paste it into my own email tool, so use plain text only.",
+      "",
+      "Match the tone, length, and structure of this example, adapting the wording naturally rather than copying it word for word:",
+      "\"\"\"",
+      "Hi [Candidate Name],",
+      "",
+      "I'm reaching out because I'm working with a school {{#if remote}}offering remote teletherapy for students in {{state}}{{else}}in {{city}}, {{state}}{{/if}} that {{status.phrase}} {{role.name.a}} for the {{schoolYear}}. {{#if schedule}}This is a {{schedule.lower}} position{{else}}This is an open position{{/if}}{{#if openTo=Local and travel candidates}} that is open to both local and travel applicants{{/if}}{{#if openTo=Local candidates only}} for local applicants{{/if}}{{#if openTo=Travel candidates only}} for travel applicants{{/if}}{{#if remote}} and is fully remote{{/if}}{{#if stipend}}, with tax-free travel stipends available for qualified candidates{{/if}}.",
+      "",
+      "If this sounds like something you might be open to, let's schedule a brief call to go over the specifics and see if it aligns with your goals.",
+      "",
+      "{{#if cta=Call or text, plus scheduling link}}",
+      "You can call or text me directly at [Phone Number], or schedule a time to chat here [Scheduling Link].",
+      "{{/if}}",
+      "{{#if cta=Scheduling link only}}",
+      "You can schedule a time to chat here [Scheduling Link].",
+      "{{/if}}",
+      "{{#if cta=Reply to the email}}",
+      "Just reply to this email and I'll send over a few times that work.",
+      "{{/if}}",
+      "",
+      "Best,",
+      "[Recruiter Name]",
+      "\"\"\"",
+      "",
+      "Rules:",
+      "- Keep the email under about 120 words, warm and direct, with no hype, no pressure, and no exclamation points.",
+      "- Use only the facts above. Do not add pay, benefits, school names, caseload details, or anything else I have not given you.",
+      "{{#if extra}}",
+      "- Work this detail in naturally: {{extra}}.",
+      "{{/if}}",
+      "{{#if stipend}}",
+      "- Keep the travel stipend wording qualified (\"available for qualified candidates\"). Do not state amounts.",
+      "{{/if}}",
+      "{{#if cta=Call or text, plus scheduling link}}",
+      "- Keep the bracketed placeholders exactly as written: [Candidate Name], [Recruiter Name], [Phone Number], and [Scheduling Link].",
+      "{{/if}}",
+      "{{#if cta=Scheduling link only}}",
+      "- Keep the bracketed placeholders exactly as written: [Candidate Name], [Recruiter Name], and [Scheduling Link].",
+      "{{/if}}",
+      "{{#if cta=Reply to the email}}",
+      "- Keep the bracketed placeholders exactly as written: [Candidate Name] and [Recruiter Name].",
+      "{{/if}}",
+      "",
+      "After the email, suggest two alternative subject lines."
+    ],
+    "checks": [
+      {
+        "when": "openTo=Travel candidates only && !stipend",
+        "message": "Travel-only roles often mention stipends. Turn on \"Mention travel stipends\" if they apply."
+      }
+    ]
+  },
+  {
+    "id": "improve-message",
+    "category": "Outreach",
+    "title": "Improve this message",
+    "description": "Tighten or rewrite an outreach message, or draft a reply, for the right audience, channel, and urgency.",
+    "fields": [
+      {
+        "id": "current",
+        "label": "Current message",
+        "type": "textarea",
+        "optional": true,
+        "placeholder": "Paste your draft, or leave blank to start from scratch",
+        "hint": "Replace real names with placeholders such as [Candidate Name]."
+      },
+      {
+        "id": "replyingTo",
+        "label": "Message I'm replying to / following up on",
+        "type": "textarea",
+        "optional": true,
+        "placeholder": "Paste the message you received, or your previous email",
+        "hint": "Replace real names with placeholders such as [Client Name]."
+      },
+      {
+        "id": "type",
+        "label": "Message type",
+        "type": "select",
+        "options": [
+          "Warm outreach",
+          "Cold outreach",
+          "Response",
+          "Follow up message",
+          "Miscellaneous"
+        ],
+        "phrases": {
+          "Warm outreach": "a warm outreach message",
+          "Cold outreach": "a cold outreach message",
+          "Response": "a response",
+          "Miscellaneous": "a message",
+          "Follow up message": "a follow-up message"
+        }
+      },
+      {
+        "id": "audience",
+        "label": "Audience",
+        "type": "select",
+        "optional": true,
+        "options": [
+          "Candidate",
+          "Client"
+        ]
+      },
+      {
+        "id": "medium",
+        "label": "Medium",
+        "type": "select",
+        "optional": true,
+        "options": [
+          "Email",
+          "SMS"
+        ],
+        "phrases": {
+          "Email": "email",
+          "SMS": "text message (SMS)"
+        }
+      },
+      {
+        "id": "urgency",
+        "label": "Urgency",
+        "type": "select",
+        "options": [
+          "High",
+          "Medium",
+          "Low"
+        ]
+      }
+    ],
+    "template": [
+      "I am a recruiter.{{#if current}} Improve the message below{{else}} Write {{type.phrase}}{{/if}}{{#if audience}} for {{audience.lower.a}}{{/if}}{{#if medium}} to send by {{medium.phrase}}{{/if}}.{{#if current}} It is {{type.phrase}}.{{/if}}",
+      "",
+      "{{#if replyingTo}}",
+      "{{#if type=Follow up message}}",
+      "The previous message I am following up on:",
+      "{{else}}",
+      "The message I am replying to:",
+      "{{/if}}",
+      "\"\"\"",
+      "{{replyingTo}}",
+      "\"\"\"",
+      "",
+      "{{/if}}",
+      "{{#if current}}",
+      "My current message:",
+      "\"\"\"",
+      "{{current}}",
+      "\"\"\"",
+      "",
+      "{{else}}",
+      "I do not have a draft yet, so write one from scratch.{{#if !replyingTo}} Use [placeholders] for any details I have not given you.{{/if}}",
+      "",
+      "{{/if}}",
+      "Context to work from:",
+      "{{#if type=Warm outreach}}",
+      "- This is a warm outreach message. The recipient has dealt with us before, so acknowledge the existing relationship and do not introduce us from scratch.",
+      "{{/if}}",
+      "{{#if type=Cold outreach}}",
+      "- This is a cold outreach message. The recipient does not know me, so earn their attention quickly, explain why I am reaching out, and avoid sounding like a template.",
+      "{{/if}}",
+      "{{#if type=Response}}",
+      "- This is a response. {{#if replyingTo}}Answer every question and concern in the message I am replying to, in the order they appear, and match its level of formality.{{else}}No original message was provided, so keep the reply general and use [placeholders] where it should refer to specifics.{{/if}}",
+      "{{/if}}",
+      "{{#if type=Follow up message}}",
+      "- This is a follow-up. {{#if replyingTo}}Reference the previous message naturally without repeating it, add something new or useful instead of just \"checking in,\" and make a reply easy.{{else}}No previous message was provided, so keep the follow-up general and use [placeholders] where it should refer to specifics.{{/if}}",
+      "{{/if}}",
+      "{{#if type=Miscellaneous}}",
+      "- This is a general message. Work out its purpose from the text and keep that purpose front and center.",
+      "{{/if}}",
+      "{{#if audience=Candidate}}",
+      "- The audience is a candidate. Lead with what is in it for them and make the next step easy.",
+      "{{/if}}",
+      "{{#if audience=Client}}",
+      "- The audience is a client. Be concise and professional, lead with the outcome for them, and show reliability and responsiveness.",
+      "{{/if}}",
+      "{{#if !audience}}",
+      "- The audience was not specified. Infer it from the message and say which you assumed.",
+      "{{/if}}",
+      "{{#if medium=Email}}",
+      "- Format it as an email with a short subject line, a brief greeting, short paragraphs, and a clear sign-off.",
+      "{{/if}}",
+      "{{#if medium=SMS}}",
+      "- Format it as a text message: no subject line, conversational, ideally under 320 characters, and one clear ask.",
+      "{{/if}}",
+      "{{#if !medium}}",
+      "- The medium was not specified. Choose the best fit for this message and say which you chose.",
+      "{{/if}}",
+      "{{#if urgency=High}}",
+      "- Urgency is high. State the time-sensitive reason and a specific next step or timeframe in the first lines, without pressure tactics.",
+      "{{/if}}",
+      "{{#if urgency=Medium}}",
+      "- Urgency is medium. Suggest a reasonable timeframe for a reply without making it feel rushed.",
+      "{{/if}}",
+      "{{#if urgency=Low}}",
+      "- Urgency is low. Keep the tone relaxed, set no deadline, and make it easy to respond whenever convenient.",
+      "{{/if}}",
+      "",
+      "Keep it clear, human, and specific, with one primary call to action. Do not invent facts, pay, benefits, or names; use [placeholders] such as [Candidate Name] instead. {{#if current}}Return the improved message first, then two or three short bullets on what you changed and why.{{else}}Return the message first, then two or three short bullets on the choices you made.{{/if}}"
+    ],
+    "checks": [
+      {
+        "when": "type=Response|Follow up message && !replyingTo",
+        "message": "Paste the message you're replying to or following up on so the AI can build on it."
+      },
+      {
+        "when": "type=Cold outreach && replyingTo",
+        "message": "Cold outreach usually has no earlier message. Did you mean Response or Follow up message?"
+      },
+      {
+        "when": "!current && !replyingTo",
+        "message": "With neither a draft nor an earlier message, the AI will write from scratch with placeholders."
+      }
+    ]
+  },
+  {
+    "id": "candidate-interview-prep",
+    "category": "Candidate support",
+    "title": "Prepare a candidate for an interview",
+    "description": "Draft a focused guide that connects prior experience to a school-based role.",
+    "fields": [
+      {
+        "id": "role",
+        "label": "Position",
+        "type": "select",
+        "options": [
+          "Speech-Language Pathologist (SLP)",
+          "Occupational Therapist (OT)",
+          "Certified Occupational Therapist Assistant (COTA)",
+          "Physical Therapist (PT)",
+          "Physical Therapist Assistant (PTA)",
+          "Speech-Language Pathology Assistant (SLPA)",
+          "Audiologist",
+          "Paraprofessional"
+        ]
+      },
+      {
+        "id": "experience",
+        "label": "Overall experience level",
+        "type": "select",
+        "options": [
+          "New graduate",
+          "Early career",
+          "Experienced",
+          "Returning to schools"
+        ],
+        "phrases": {
+          "New graduate": "who just graduated",
+          "Early career": "who is early in their career",
+          "Experienced": "who is experienced",
+          "Returning to schools": "who is returning to school-based work"
+        }
+      },
+      {
+        "id": "time",
+        "label": "Time until interview",
+        "type": "select",
+        "options": [
+          "Today",
+          "Tomorrow",
+          "This week",
+          "More than a week"
+        ],
+        "phrases": {
+          "Today": "today",
+          "Tomorrow": "tomorrow",
+          "This week": "later this week",
+          "More than a week": "more than a week away"
+        }
+      },
+      {
+        "id": "term",
+        "label": "School term",
+        "type": "select",
+        "options": [
+          "ESY (Extended School Year)",
+          "CSY (Current School Year)",
+          "NSY (Next School Year)"
+        ],
+        "phrases": {
+          "ESY (Extended School Year)": "for the Extended School Year (ESY)",
+          "CSY (Current School Year)": "for the Current School Year (CSY)",
+          "NSY (Next School Year)": "for the Next School Year (NSY)"
+        }
+      },
+      {
+        "id": "pediatricYears",
+        "label": "Years of pediatric experience",
+        "type": "number",
+        "optional": true,
+        "min": 0,
+        "max": 50,
+        "placeholder": "e.g., 4",
+        "hint": "Leave blank if unknown. Use 0 for none."
+      },
+      {
+        "id": "schoolYears",
+        "label": "Years of school experience",
+        "type": "number",
+        "optional": true,
+        "min": 0,
+        "max": 50,
+        "placeholder": "e.g., 1",
+        "hint": "Leave blank if unknown. Use 0 for none."
+      }
+    ],
+    "template": [
+      "I am a recruiter preparing {{role.name.a}} candidate {{experience.phrase}} for an interview that is {{time.phrase}}. The position is {{term.phrase}}.",
+      "",
+      "{{#if pediatricYears && schoolYears}}",
+      "The candidate has {{pediatricYears.count:year}} of pediatric experience and {{schoolYears.count:year}} of school-based experience.",
+      "{{/if}}",
+      "{{#if pediatricYears && !schoolYears}}",
+      "The candidate has {{pediatricYears.count:year}} of pediatric experience. Their school-based experience was not provided, so do not assume any.",
+      "{{/if}}",
+      "{{#if !pediatricYears && schoolYears}}",
+      "The candidate has {{schoolYears.count:year}} of school-based experience. Their other pediatric experience was not provided, so do not assume any.",
+      "{{/if}}",
+      "{{#if !pediatricYears && !schoolYears}}",
+      "The candidate's years of experience were not provided, so do not assume any.",
+      "{{/if}}",
+      "",
+      "Create a concise, practical interview-preparation guide for the candidate to review.",
+      "",
+      "{{#if time=Today|Tomorrow}}",
+      "Time is short, so keep the guide to about a 15-minute read. Lead with the most important points and end with a quick checklist for right before the interview.",
+      "{{/if}}",
+      "{{#if time=This week}}",
+      "The candidate has a few days, so make the guide easy to review over a couple of short sittings and end with a brief prep checklist.",
+      "{{/if}}",
+      "{{#if time=More than a week}}",
+      "The candidate has time to prepare, so include a short day-by-day study plan and a few practice exercises, such as rehearsing answers out loud.",
+      "{{/if}}",
+      "",
+      "{{#if experience=New graduate}}",
+      "Because the candidate is a new graduate, explain IEPs and school-specific skills from the ground up. Draw examples from coursework, clinical placements, and fieldwork rather than paid jobs, and coach them to present limited experience with confidence.",
+      "{{/if}}",
+      "{{#if experience=Early career}}",
+      "Explain IEPs and school-specific skills at a working level. Help the candidate show growing independence, and use examples from their early roles.",
+      "{{/if}}",
+      "{{#if experience=Experienced}}",
+      "Keep the IEP and school basics brief. Focus on how the candidate's depth of experience, caseload management, and collaboration skills carry over into a school setting.",
+      "{{/if}}",
+      "{{#if experience=Returning to schools}}",
+      "Include a quick refresher on current school-based practice, such as IEP processes, documentation, and working with teachers. Help the candidate talk about what they have done since they last worked in schools.",
+      "{{/if}}",
+      "",
+      "{{#if term=ESY (Extended School Year)}}",
+      "Cover the dynamics of ESY: services for students whose IEP teams determined they need support outside the regular school calendar, short and condensed schedules, preventing loss of skills over the break, and variable attendance.",
+      "{{/if}}",
+      "{{#if term=CSY (Current School Year)}}",
+      "Cover the dynamics of starting during the current school year: stepping into an existing caseload, reviewing current IEPs and progress data, and building rapport with an established team.",
+      "{{/if}}",
+      "{{#if term=NSY (Next School Year)}}",
+      "Cover the dynamics of the next school year: planning ahead, setting up a new caseload and schedule, annual IEP timelines, and what to ask about onboarding before the year starts.",
+      "{{/if}}",
+      "",
+      "{{#if role=Speech-Language Pathologist (SLP)}}",
+      "Where relevant, tie examples to school-based speech and language work, such as articulation, language, fluency, and AAC.",
+      "{{/if}}",
+      "{{#if role=Speech-Language Pathology Assistant (SLPA)}}",
+      "Where relevant, cover working under SLP supervision, carrying out treatment plans, collecting data, and staying within scope of practice.",
+      "{{/if}}",
+      "{{#if role=Occupational Therapist (OT)}}",
+      "Where relevant, tie examples to school-based OT work, such as fine motor skills, sensory regulation, and helping students take part in classroom routines.",
+      "{{/if}}",
+      "{{#if role=Physical Therapist (PT)}}",
+      "Where relevant, tie examples to school-based PT work, such as mobility, positioning, and safe access to the school environment.",
+      "{{/if}}",
+      "{{#if role=Certified Occupational Therapist Assistant (COTA)}}",
+      "Where relevant, cover working under OT supervision, carrying out treatment plans, documenting progress, and staying within scope of practice.",
+      "{{/if}}",
+      "{{#if role=Physical Therapist Assistant (PTA)}}",
+      "Where relevant, cover working under PT supervision, carrying out treatment plans for mobility and positioning, documenting progress, and staying within scope of practice.",
+      "{{/if}}",
+      "{{#if role=Audiologist}}",
+      "Where relevant, tie examples to school-based audiology work, such as hearing screenings, hearing devices like hearing aids and classroom amplification, and classroom listening environments.",
+      "{{/if}}",
+      "{{#if role=Paraprofessional}}",
+      "Where relevant, cover supporting students under the direction of teachers and therapists, classroom routines, behavior support, and confidentiality.",
+      "{{/if}}",
+      "",
+      "Include likely interview questions with brief answer frameworks. Emphasize transferable skills from the candidate's prior experience and give concrete examples relevant to this role. Do not invent details about the candidate; use placeholders such as [Candidate example] where a personal example is needed."
+    ],
+    "checks": [
+      {
+        "when": "experience=New graduate && pediatricYears>=2",
+        "message": "A new graduate with 2 or more years of pediatric experience is unusual. Double-check the experience level."
+      },
+      {
+        "when": "experience=Experienced && !pediatricYears && !schoolYears",
+        "message": "Add years of experience so the guide can pitch the right depth."
+      },
+      {
+        "when": "experience=Returning to schools && !schoolYears",
+        "message": "Add the years of past school experience so the refresher can be sized to the candidate."
+      }
+    ]
+  },
+  {
+    "id": "state-license-research",
+    "category": "Licensure research",
+    "title": "Research state licensing requirements",
+    "description": "Create a sourced licensing roadmap for relocation, travel, or remote work.",
+    "fields": [
+      {
+        "id": "role",
+        "label": "Profession",
+        "type": "select",
+        "options": [
+          "Speech-Language Pathologist (SLP)",
+          "Occupational Therapist (OT)"
+        ]
+      },
+      {
+        "id": "homeState",
+        "label": "Current home-state license",
+        "type": "text",
+        "placeholder": "e.g., New Mexico"
+      },
+      {
+        "id": "remote",
+        "label": "Seeking remote work",
+        "type": "checkbox"
+      },
+      {
+        "id": "travel",
+        "label": "Seeking travel assignments",
+        "type": "checkbox"
+      },
+      {
+        "id": "currentLicenses",
+        "label": "Other state and national credentials",
+        "type": "text",
+        "optional": true,
+        "placeholder": "List current licenses and credentials",
+        "hint": "Leave blank if there are none."
+      },
+      {
+        "id": "targetStates",
+        "label": "Target states",
+        "type": "text",
+        "placeholder": "Name states, or enter all states"
+      }
+    ],
+    "template": [
+      "I am a recruiter helping {{role.name.a}} who holds a current {{homeState}} license.",
+      "{{#if remote && travel}}",
+      "They want both remote work and travel assignments.",
+      "{{/if}}",
+      "{{#if remote && !travel}}",
+      "They want remote work.",
+      "{{/if}}",
+      "{{#if !remote && travel}}",
+      "They want travel assignments.",
+      "{{/if}}",
+      "{{#if !remote && !travel}}",
+      "They are not specifically seeking remote or travel work, so treat this as a standard in-person licensing and relocation question.",
+      "{{/if}}",
+      "{{#if currentLicenses}}",
+      "Other current state licenses and national credentials: {{currentLicenses}}.",
+      "{{else}}",
+      "No other state licenses or national credentials were provided, so do not assume any.",
+      "{{/if}}",
+      "",
+      "{{#if targetStates~all}}",
+      "Research all states. Start with an at-a-glance comparison table of compact participation, whether the {{homeState}} license can transfer or earn a privilege to practice, and typical timelines, then give the state-by-state detail.",
+      "{{else}}",
+      "States to research: {{targetStates.list}}.",
+      "{{/if}}",
+      "",
+      "Prepare a state-by-state licensing roadmap. For each state, cover the individual application requirements, estimated fees and other costs, typical processing timelines, links to the official licensing board and application resources, and citations for each factual claim. Clearly distinguish official facts from estimates and note the date checked.",
+      "",
+      "{{#if role=Speech-Language Pathologist (SLP)}}",
+      "Verify participation and eligibility in the Audiology and Speech-Language Pathology Interstate Compact (ASLP-IC) using the official compact website and the relevant state board, and note whether national certification (such as ASHA's CCC-SLP) is required or accepted.",
+      "{{else}}",
+      "Verify participation and eligibility in the Occupational Therapy Licensure Compact (OT Compact) using the official compact website and the relevant state board, and note whether national certification (such as NBCOT's) is required or accepted.",
+      "{{/if}}",
+      "Do not assume compact participation means automatic authorization. Explain whether {{homeState}}'s compact status changes the candidate's options in each state.",
+      "",
+      "{{#if remote}}",
+      "Because the work is remote, determine which license is needed in the state where the client is located, and any telepractice-specific rules.",
+      "{{/if}}",
+      "{{#if travel}}",
+      "Because the work is travel-based, highlight temporary, expedited, or short-term license options and the fastest realistic path to start, since timelines matter most here.",
+      "{{/if}}",
+      "Flag requirements that must be confirmed directly with the board. Do not invent costs, timelines, or URLs."
+    ]
+  }
+]

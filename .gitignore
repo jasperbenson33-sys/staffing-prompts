@@ -147,3 +147,9 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+# Local-only source material (never commit)
+source/
+
+# Build output
+dist/
+.vercel
