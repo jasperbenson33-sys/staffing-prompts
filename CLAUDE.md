@@ -1,4 +1,4 @@
-# Soliant Prompt Studio
+# Prompt Studio
 
 Internal prompt-building tool for recruiters. Users choose a workflow, fill in simple fields, review a live prompt, and copy it into an approved AI tool or Toro.
 

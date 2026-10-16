@@ -1,4 +1,4 @@
-# Soliant Prompt Studio
+# Prompt Studio
 
 A static prompt builder for recruiter workflows. Choose a workflow, complete its fields, review the generated prompt, and copy it into an approved AI tool or Toro.
 
