@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import useCases from './data/use-cases.json';
 import { MISSING, activeChecks, fieldLabel, inputValue, isHidden, renderPrompt } from './lib/template';
 import type { Field, UseCase } from './lib/template';
-import { CHAT_TARGETS, openInChat } from './lib/chatLinks';
+import { CHAT_TARGETS, copyText, openInChat } from './lib/chatLinks';
 import type { ChatTarget } from './lib/chatLinks';
 import { formatValue } from './lib/format';
 import { THEMES, setFavicon } from './lib/themes';
@@ -17,6 +17,7 @@ function App() {
   const [values, setValues] = useState<Record<string, Record<string, string>>>({});
   const [copied, setCopied] = useState(false);
   const [copiedExtra, setCopiedExtra] = useState(false);
+  const [chatStatus, setChatStatus] = useState('');
   // Theme is not saved anywhere, so each visit starts on Dark.
   const [theme, setTheme] = useState<ThemeId>('dark');
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -51,11 +52,13 @@ function App() {
       [activeCase.id]: { ...current[activeCase.id], [field.id]: value },
     }));
     setCopied(false);
+    setChatStatus('');
   }
 
   function clearFields() {
     setValues((current) => ({ ...current, [activeCase.id]: {} }));
     setCopied(false);
+    setChatStatus('');
   }
 
   let prompt: string;
@@ -77,20 +80,20 @@ function App() {
     }
   }
 
-  function openChat(target: ChatTarget) {
-    openInChat(target, prompt);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
+  async function openChat(target: ChatTarget) {
+    const name = CHAT_TARGETS[target].label.replace('Open in ', '');
+    const { prefilled, copied: copyResult } = openInChat(target, prompt);
+    setChatStatus(prefilled
+      ? `Opened ${name} with your prompt filled in. It is also copied.`
+      : `This prompt is too long to prefill. It is copied, so press Ctrl+V (Cmd+V on Mac) in ${name}.`);
+    if (!(await copyResult)) {
+      setChatStatus(`Could not copy automatically. Use Copy prompt, then paste it into ${name}.`);
+    }
   }
 
   async function copyPrompt() {
-    try {
-      await navigator.clipboard.writeText(prompt);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
-    }
+    setCopied(await copyText(prompt));
+    window.setTimeout(() => setCopied(false), 1800);
   }
 
   return (
@@ -117,7 +120,7 @@ function App() {
                 <button
                   className={`nav-item ${activeCase.id === useCase.id ? 'active' : ''}`}
                   key={useCase.id}
-                  onClick={() => { setActiveId(useCase.id); setCopied(false); setCopiedExtra(false); }}
+                  onClick={() => { setActiveId(useCase.id); setCopied(false); setCopiedExtra(false); setChatStatus(''); }}
                   aria-current={activeCase.id === useCase.id ? 'page' : undefined}
                 >
                   {useCase.title}
@@ -257,7 +260,9 @@ function App() {
                   </button>
                 </div>
               </div>
-              <p className="open-note">Opening a chat also copies your prompt. If the chat opens empty, paste it in.</p>
+              <p className="open-note" role="status">
+                {chatStatus || 'Opening a chat also copies your prompt. If the chat opens empty, paste it in.'}
+              </p>
             </section>
             {activeCase.afterPrompt && (
               <section className="card extra-card" aria-label="Follow-up text">
